@@ -1,12 +1,12 @@
-from aiogram import types, Dispatcher
+from aiogram import types, Dispatcher, F
 from aiogram.filters import Command
 
-from create_bot import bot
+from create_bot import bot, redis
 import database as db
 import keyboards as kb
 
 
-async def command_start_handler(message: types.Message):
+async def command_start_handler(message: types.Message) -> None:
     try:
         await message.delete()
     finally:
@@ -18,7 +18,7 @@ async def command_start_handler(message: types.Message):
             reply_markup=kb.start_kb)
 
 
-async def set_commands_handler(message: types.Message):
+async def set_commands_handler(message: types.Message) -> None:
     try:
         await message.delete()
     finally:
@@ -28,7 +28,7 @@ async def set_commands_handler(message: types.Message):
                              reply_markup=kb.start_kb)
 
 
-async def command_help_handler(message: types.Message):
+async def command_help_handler(message: types.Message) -> None:
     try:
         await message.delete()
     finally:
@@ -39,7 +39,15 @@ async def command_help_handler(message: types.Message):
             reply_markup=kb_help)
 
 
-async def other_messages(message: types.Message):
+async def currency_handler(message: types.Message) -> None:
+    try:
+        await message.delete()
+    finally:
+        msg = await redis.get(name=kb.cur_types[message.text])
+        await message.answer(text=msg, reply_markup=kb.start_kb)
+
+
+async def other_messages(message: types.Message) -> None:
     try:
         await message.delete()
     finally:
@@ -48,8 +56,9 @@ async def other_messages(message: types.Message):
             reply_markup=kb.start_kb)
 
 
-def register(dp: Dispatcher):
+def register(dp: Dispatcher) -> None:
     dp.message.register(command_start_handler, Command(commands=["start"]))
     dp.message.register(command_help_handler, Command(commands=["help"]))
     dp.message.register(set_commands_handler, Command(commands=["set_commands"]))
+    dp.message.register(currency_handler, F.text.in_(kb.cur_types))
     dp.message.register(other_messages)

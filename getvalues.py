@@ -4,7 +4,7 @@ from create_bot import redis
 from keyboards import cur_types as ct
 
 
-def refresh_db(city: str, day: str):
+def refresh_db(city: str, day: str) -> list:
     print('Обновление курсов валют')
     r = requests.get('https://myfin.by/currency/' + city + '/' + day)
     soup = Bs(r.content, 'lxml')
@@ -15,21 +15,20 @@ def refresh_db(city: str, day: str):
     values = []
     for i in table.find("tbody").findAll("td"):
         values.append(i.text.strip())
-    best_usd, best_eur, best_rub, best_pln, best_uah = {}, {}, {}, {}, {}
+    best_usd, best_eur, best_rub, best_pln = {}, {}, {}, {}
     for i in range(len(keys)):
         best_usd[keys[i]] = values[i]
         best_eur[keys[i]] = values[i + 5]
         best_rub[keys[i]] = values[i + 10]
         best_pln[keys[i]] = values[i + 15]
-        best_uah[keys[i]] = values[i + 20]
     print('Курсы валют обновлены')
-    return [best_usd, best_eur, best_rub, best_pln, best_uah]
+    return [best_usd, best_eur, best_rub, best_pln]
 
 
-async def add_to_redis(curr_today: list, curr_yesterday: list):
-    cur_types = ['usd', 'eur', 'rub', 'pln', 'uah']
+async def add_to_redis(curr_today: list, curr_yesterday: list) -> None:
+    cur_types = ['usd', 'eur', 'rub', 'pln']
     cur_names = list(ct.keys())
-    for i in range(5):
+    for i in range(4):
         dif_buy = round(float(curr_today[i]['Покупка']) - float(curr_yesterday[i]['Покупка']), 4)
         dif_sell = round(float(curr_today[i]['Продажа']) - float(curr_yesterday[i]['Продажа']), 4)
         dif_nbrb = round(float(curr_today[i]['НБ РБ']) - float(curr_yesterday[i]['НБ РБ']), 4)

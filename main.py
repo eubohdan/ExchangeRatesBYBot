@@ -12,13 +12,13 @@ import commands
 
 
 async def on_start() -> None:
-    # await bot.send_message(config.admin_id, '✅Бот запущен.', disable_notification=True)
-    # await redis.close()
+    await bot.send_message(config.admin_id, '✅Бот запущен.', disable_notification=True)
+    await redis.close()
     pass
 
 
 async def on_finish() -> None:
-    # await bot.send_message(config.admin_id, '⚠Бот остановлен.', disable_notification=True)
+    await bot.send_message(config.admin_id, '⚠Бот остановлен.', disable_notification=True)
     await redis.close()
 
 
